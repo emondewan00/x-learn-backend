@@ -3,8 +3,19 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import generateToken from "../utils/generateToken";
 
+type REgisterInput = {
+  name: string;
+  email: string;
+  password: string;
+};
+
+type LoginInput = {
+  email: string;
+  password: string;
+};
+
 export const registerUser = async (
-  req: Request,
+  req: Request<{}, {}, REgisterInput>,
   res: Response
 ): Promise<void> => {
   try {
@@ -39,7 +50,10 @@ export const registerUser = async (
   }
 };
 
-export const loginUser = async (req: Request, res: Response): Promise<void> => {
+export const loginUser = async (
+  req: Request<{}, {}, LoginInput>,
+  res: Response
+): Promise<void> => {
   try {
     console.log("login user");
     const { email, password } = req.body;
