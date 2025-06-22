@@ -5,6 +5,7 @@ import connectDB from "./config/connectDB";
 dotenv.config();
 import authRouter from "./routes/auth.route";
 import courseRouter from "./routes/course.route";
+import moduleRouter from "./routes/module.route";
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRouter);
 app.use("/api/courses", courseRouter);
+app.use("/api/modules", moduleRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");

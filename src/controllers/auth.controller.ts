@@ -37,7 +37,7 @@ export const registerUser = async (
     const user = new User({ name, email, password: hashedPassword });
     await user.save();
 
-    const token = generateToken(user._id.toString() as string);
+    const token = generateToken(user._id.toString(), user.role);
 
     res.status(201).json({
       message: "User registered successfully",
@@ -74,7 +74,7 @@ export const loginUser = async (
       return;
     }
 
-    const token = generateToken(user._id.toString());
+    const token = generateToken(user._id.toString(), user.role);
 
     res.status(200).json({
       message: "User logged in successfully",
