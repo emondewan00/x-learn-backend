@@ -7,6 +7,8 @@ const courseSchema = new Schema<ICourse>(
     description: { type: String, required: true },
     price: { type: Number, required: true },
     image: { type: String, required: true },
+    published: { type: Boolean, default: false },
+    modules: [{ type: Schema.Types.ObjectId, ref: "Module" }],
   },
   {
     timestamps: true,
