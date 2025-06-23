@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import {  IUser } from "../types/user.types";
+import { IUser } from "../types/user.types";
 
 const userSchema = new Schema<IUser>(
   {
@@ -7,6 +7,7 @@ const userSchema = new Schema<IUser>(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ["user", "admin"], default: "user" },
+    enrolledCourses: [{ type: Schema.Types.ObjectId, ref: "Course" }],
   },
   {
     timestamps: true,

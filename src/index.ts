@@ -7,6 +7,7 @@ import authRouter from "./routes/auth.route";
 import courseRouter from "./routes/course.route";
 import moduleRouter from "./routes/module.route";
 import lessonRouter from "./routes/lesson.route";
+import userCourseRouter from "./routes/userCourse.route";
 
 const app = express();
 
@@ -17,8 +18,9 @@ app.use("/api/auth", authRouter);
 app.use("/api/courses", courseRouter);
 app.use("/api/modules", moduleRouter);
 app.use("/api/lessons", lessonRouter);
+app.use("/api/userCourses", userCourseRouter);
 
-app.get("/", (req, res) => {
+app.get("/", (_, res) => {
   res.send("Hello World!");
 });
 

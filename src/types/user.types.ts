@@ -1,8 +1,9 @@
+import { Types } from "mongoose";
+
 export interface IUser {
   name: string;
   email: string;
   password: string;
   role: "user" | "admin";
-  createdAt: Date;
-  updatedAt: Date;
+  enrolledCourses: Types.ObjectId[];
 }
