@@ -9,11 +9,12 @@ import {
 } from "../controllers/course.controller";
 import upload from "../config/multer";
 import checkJWTToken from "../middleware/checkJWTToken";
+import { optionalAuth } from "../middleware/optionalAuth";
 
 const courseRouter = Router();
 
 courseRouter.get("/", getAllCourses);
-courseRouter.get("/:id", getCourseById);
+courseRouter.get("/:id", optionalAuth, getCourseById);
 courseRouter.post("/", checkJWTToken, upload.single("image"), createCourse);
 courseRouter.patch("/:id", checkJWTToken, updateCourse);
 courseRouter.delete("/:id", checkJWTToken, deleteCourse);
