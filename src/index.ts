@@ -6,6 +6,7 @@ dotenv.config();
 import authRouter from "./routes/auth.route";
 import courseRouter from "./routes/course.route";
 import moduleRouter from "./routes/module.route";
+import lessonRouter from "./routes/lesson.route";
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use("/api/auth", authRouter);
 app.use("/api/courses", courseRouter);
 app.use("/api/modules", moduleRouter);
+app.use("/api/lessons", lessonRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
