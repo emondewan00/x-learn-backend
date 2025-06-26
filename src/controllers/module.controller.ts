@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import { Module } from "../models/module.model";
 import { Course } from "../models/course.model";
+import { UserCourse } from "../models/userCourse.model";
+import { enhanceCourseWithProgress } from "../utils/enhanceCourseWithProgress";
+import { ILessonDoc } from "../types/lesson.types";
 
 type ModuleInput = {
   title: string;
@@ -11,6 +14,52 @@ type ModuleInput = {
 
 type Params = {
   id: string;
+};
+
+const getModulesByCourse = async (req: Request<Params>, res: Response) => {
+  try {
+    const userProgress = await UserCourse.findOne({
+      userId: req.user.id,
+      courseId: req.params.id,
+    }).lean();
+
+    if (!userProgress) {
+      res.status(200).json({ message: "Modules found", data: [] });
+      return;
+    }
+
+    const modulesData = await Module.find({ courseId: req.params.id })
+      .populate<{ lessons: ILessonDoc[] }>({
+        path: "lessons",
+        select: "title description video resources order _id moduleId",
+      })
+      .select("title description order _id courseId")
+      .lean();
+
+    const totalLessons = modulesData.reduce(
+      (total, module) => total + module.lessons.length,
+      0
+    );
+
+    const { activeLesson, modules } = enhanceCourseWithProgress(
+      modulesData,
+      userProgress
+    );
+
+    const countInitialProgress =
+      userProgress.completedLessons.length / totalLessons * 100;
+
+    res.status(200).json({
+      message: "Modules found",
+      data: modules,
+      progress: countInitialProgress,
+      completedLessons: userProgress.completedLessons,
+      activeLesson,
+      totalLessons,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to get modules", success: false });
+  }
 };
 
 const getModuleById = async (req: Request<Params>, res: Response) => {
@@ -99,4 +148,10 @@ const deleteModule = async (req: Request<Params>, res: Response) => {
   }
 };
 
-export { getModuleById, createModule, updateModule, deleteModule };
+export {
+  getModuleById,
+  createModule,
+  updateModule,
+  deleteModule,
+  getModulesByCourse,
+};

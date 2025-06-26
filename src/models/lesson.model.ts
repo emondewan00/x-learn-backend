@@ -9,6 +9,7 @@ const lessonSchema = new Schema<ILesson>(
     moduleId: { type: Schema.Types.ObjectId, ref: "Module", required: true },
     courseId: { type: Schema.Types.ObjectId, ref: "Course", required: true },
     order: { type: Number, required: true },
+    resources: [{ type: String }],
   },
   {
     timestamps: true,

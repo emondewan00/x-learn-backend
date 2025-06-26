@@ -7,3 +7,7 @@ export interface IModule {
   courseId: Types.ObjectId;
   lessons: Types.ObjectId[];
 }
+
+export interface IModuleDoc extends IModule {
+  _id: Types.ObjectId;
+}

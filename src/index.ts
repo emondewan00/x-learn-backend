@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import cookiesParser from "cookie-parser";
 import dotenv from "dotenv";
 import connectDB from "./config/connectDB";
 dotenv.config();
@@ -12,8 +13,16 @@ import userCourseRouter from "./routes/userCourse.route";
 const app = express();
 
 connectDB();
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(express.json());
+app.use(cookiesParser());
+
+app.use(express.static("src/uploads"));
 app.use("/api/auth", authRouter);
 app.use("/api/courses", courseRouter);
 app.use("/api/modules", moduleRouter);

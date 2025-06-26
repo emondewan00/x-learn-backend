@@ -17,7 +17,7 @@ const userCourseSchema = new Schema<IUserCourse>({
   },
   completedLessons: [{ type: Schema.Types.ObjectId, ref: "Lesson" }],
   lastVisitedLesson: { type: Schema.Types.ObjectId, ref: "Lesson" },
-  isCompleted: { type: Boolean, default: false },
+  completeProgress: { type: Number, default: 0 },
 });
 
 userCourseSchema.index({ userId: 1, courseId: 1 }, { unique: true });

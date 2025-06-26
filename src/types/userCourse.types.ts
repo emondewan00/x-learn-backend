@@ -8,5 +8,9 @@ export interface IUserCourse {
   paymentStatus: "pending" | "paid" | "failed";
   completedLessons: Types.ObjectId[];
   lastVisitedLesson: Types.ObjectId;
-  isCompleted: boolean;
+  completeProgress: number;
+}
+
+export interface IUserCourseDoc extends IUserCourse {
+  _id: Types.ObjectId;
 }

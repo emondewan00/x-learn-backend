@@ -2,7 +2,11 @@ import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
 const checkJWTToken = (req: Request, res: Response, next: NextFunction) => {
-  const authToken = req.headers.authorization;
+  let authToken = req.headers.authorization;
+
+  if (!authToken) {
+    authToken = "bearer " + req.cookies["authjs.session-token"];
+  }
 
   if (!authToken) {
     res.status(401).send("Unauthorized");

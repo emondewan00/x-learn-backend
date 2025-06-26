@@ -18,10 +18,10 @@ export const registerUser = async (
   req: Request<{}, {}, REgisterInput>,
   res: Response
 ): Promise<void> => {
+  console.log(req.body);
   try {
-    console.log("register user");
     const { name, email, password } = req.body;
-
+    console.log(req.body);
     if (!name || !email || !password) {
       res.status(400).json({ message: "All fields are required" });
       return;
@@ -37,15 +37,15 @@ export const registerUser = async (
     const user = new User({ name, email, password: hashedPassword });
     await user.save();
 
-    const token = generateToken(user._id.toString(), user.role);
+    const token = generateToken(user._id.toString(), user.role); // this token is not used in frontend
 
     res.status(201).json({
       message: "User registered successfully",
       token,
-      user: { id: user._id, name, email },
+      user: { id: user._id, name, email, role: user.role },
     });
   } catch (error) {
-    console.error(error);
+    console.error(error, req.body);
     res.status(500).json({ message: "Error registering user" });
   }
 };
@@ -55,7 +55,6 @@ export const loginUser = async (
   res: Response
 ): Promise<void> => {
   try {
-    console.log("login user");
     const { email, password } = req.body;
     if (!email || !password) {
       res.status(400).json({ message: "Email and password required" });
@@ -74,12 +73,17 @@ export const loginUser = async (
       return;
     }
 
-    const token = generateToken(user._id.toString(), user.role);
+    const token = generateToken(user._id.toString(), user.role); // this token is not used in frontend
 
     res.status(200).json({
       message: "User logged in successfully",
       token,
-      user: { id: user._id, name: user.name, email: user.email },
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (error) {
     console.error(error);

@@ -58,7 +58,8 @@ const createUserCourse = async (
 
     const userCourse = await UserCourse.create(req.body);
 
-    const userDoc = await User.findById(user._id);
+    const userDoc = await User.findById(user.id);
+
     if (!userDoc) {
       await UserCourse.findByIdAndDelete(userCourse._id);
       res.status(404).json({ success: false, message: "User not found" });
@@ -79,4 +80,51 @@ const createUserCourse = async (
   }
 };
 
-export { getMyCourses, createUserCourse };
+const updateUserCourse = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userCourse = await UserCourse.findByIdAndUpdate(id, req.body);
+    if (!userCourse) {
+      res
+        .status(404)
+        .json({ success: false, message: "User course not found" });
+      return;
+    }
+    res.status(200).json({ success: true, data: userCourse });
+  } catch (error) {
+    res.status(500).json({ success: false, message: (error as Error).message });
+  }
+};
+
+const updateCompleteLesson = async (req: Request, res: Response) => {
+  try {
+    const { courseId, lessonId, lastVisitedLesson } = req.body;
+    const { id } = req.user;
+    const userCourse = await UserCourse.findOne({
+      courseId: courseId,
+      userId: id,
+    });
+
+    if (!userCourse) {
+      res
+        .status(404)
+        .json({ success: false, message: "User course not found" });
+      return;
+    }
+
+    userCourse.completedLessons.push(lessonId);
+    userCourse.lastVisitedLesson = lastVisitedLesson;
+    await userCourse.save();
+
+    res.status(200).json({ success: true, data: userCourse });
+  } catch (error) {
+    res.status(500).json({ success: false, message: (error as Error).message });
+  }
+};
+
+export {
+  getMyCourses,
+  createUserCourse,
+  updateUserCourse,
+  updateCompleteLesson,
+};
