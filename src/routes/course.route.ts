@@ -6,6 +6,8 @@ import {
   getAllCourses,
   updateCourse,
   getCourseById,
+  getAllCoursesForAdmin,
+  updateCourseImage,
 } from "../controllers/course.controller";
 import upload from "../config/multer";
 import checkJWTToken from "../middleware/checkJWTToken";
@@ -15,6 +17,7 @@ import { checkAdmin } from "../middleware/checkAdmin";
 const courseRouter = Router();
 
 courseRouter.get("/", optionalAuth, getAllCourses);
+courseRouter.get("/all", checkJWTToken, getAllCoursesForAdmin);
 courseRouter.get("/:id", optionalAuth, getCourseById);
 courseRouter.post(
   "/",
@@ -22,6 +25,13 @@ courseRouter.post(
   checkAdmin,
   upload.single("image"),
   createCourse
+);
+courseRouter.patch(
+  "/image/:id",
+  checkJWTToken,
+  checkAdmin,
+  upload.single("image"),
+  updateCourseImage
 );
 courseRouter.patch("/:id", checkJWTToken, checkAdmin, updateCourse);
 courseRouter.delete("/:id", checkJWTToken, checkAdmin, deleteCourse);

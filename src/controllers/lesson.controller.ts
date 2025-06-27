@@ -2,6 +2,12 @@ import { Request, Response } from "express";
 import { Lesson } from "../models/lesson.model";
 import { ILesson } from "../types/lesson.types";
 import { Module } from "../models/module.model";
+import fs from "fs";
+import path from "path";
+
+interface MulterRequest extends Request {
+  files: Express.Multer.File[];
+}
 
 type Params = { id: string };
 
@@ -62,6 +68,38 @@ const updateLesson = async (
       res.status(404).json({ success: false, message: "Lesson not found" });
       return;
     }
+
+    res.status(200).json({ success: true, data: lesson });
+  } catch (error) {
+    res.status(500).json({ success: false, message: (error as Error).message });
+  }
+};
+
+const updatePDF = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const lesson = await Lesson.findById(id);
+    if (!lesson) {
+      res.status(404).json({ success: false, message: "Lesson not found" });
+      return;
+    }
+    const file = (req as MulterRequest).files;
+
+    if (!file?.length) {
+      res.status(400).json({ success: false, message: "PDF is required" });
+      return;
+    }
+
+    for (const resource of lesson.resources) {
+      fs.unlinkSync(
+        path.join(__dirname, "..", "..") + "/uploads/resources/" + resource
+      );
+    }
+
+    lesson.resources = file.map((file: any) => file.filename) as string[];
+
+    await lesson.save();
+
     res.status(200).json({ success: true, data: lesson });
   } catch (error) {
     res.status(500).json({ success: false, message: (error as Error).message });
@@ -84,4 +122,11 @@ const deleteLesson = async (req: Request<Params>, res: Response) => {
   }
 };
 
-export { getLessons, getLessonById, createLesson, updateLesson, deleteLesson };
+export {
+  getLessons,
+  getLessonById,
+  createLesson,
+  updateLesson,
+  deleteLesson,
+  updatePDF,
+};

@@ -9,6 +9,7 @@ import courseRouter from "./routes/course.route";
 import moduleRouter from "./routes/module.route";
 import lessonRouter from "./routes/lesson.route";
 import userCourseRouter from "./routes/userCourse.route";
+import path from "path";
 
 const app = express();
 
@@ -22,7 +23,7 @@ app.use(
 app.use(express.json());
 app.use(cookiesParser());
 
-app.use(express.static("src/uploads"));
+app.use("/statics", express.static(path.join(__dirname, "..", "uploads")));
 app.use("/api/auth", authRouter);
 app.use("/api/courses", courseRouter);
 app.use("/api/modules", moduleRouter);

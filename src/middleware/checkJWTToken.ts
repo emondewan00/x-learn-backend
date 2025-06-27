@@ -20,7 +20,7 @@ const checkJWTToken = (req: Request, res: Response, next: NextFunction) => {
     req.user = decoded as JwtPayload;
     next();
   } catch (err) {
-    console.error("JWT Verification Error:", err);
+    console.error("JWT Verification Error:" + token, err, token, "hello");
     res.status(401).json({ message: "Unauthorized" });
   }
 };

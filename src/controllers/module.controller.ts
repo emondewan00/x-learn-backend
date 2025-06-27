@@ -47,7 +47,7 @@ const getModulesByCourse = async (req: Request<Params>, res: Response) => {
     );
 
     const countInitialProgress =
-      userProgress.completedLessons.length / totalLessons * 100;
+      (userProgress.completedLessons.length / totalLessons) * 100;
 
     res.status(200).json({
       message: "Modules found",
@@ -64,8 +64,7 @@ const getModulesByCourse = async (req: Request<Params>, res: Response) => {
 
 const getModuleById = async (req: Request<Params>, res: Response) => {
   try {
-    const module = await Module.findById(req.params.id);
-    // TODO: populate lessons property
+    const module = await Module.findById(req.params.id).populate("lessons");
     if (!module) {
       res.status(404).json({ message: "Module not found", success: false });
       return;
@@ -74,6 +73,7 @@ const getModuleById = async (req: Request<Params>, res: Response) => {
       .status(200)
       .json({ message: "Module found", data: module, success: true });
   } catch (error) {
+    console.error(error, req.params.id);
     res.status(500).json({ message: "Failed to get module", success: false });
   }
 };
@@ -83,7 +83,7 @@ const createModule = async (
   res: Response
 ) => {
   try {
-    const { title, description, order, courseId } = req.body;
+    const { courseId } = req.body;
 
     const course = await Course.findById(courseId);
     if (!course) {
@@ -91,12 +91,7 @@ const createModule = async (
       return;
     }
 
-    const module = await Module.create({
-      title,
-      description,
-      order,
-      courseId,
-    });
+    const module = await Module.create(req.body);
 
     // save module id in the course
     course.modules.push(module._id);
@@ -104,6 +99,7 @@ const createModule = async (
 
     res.status(201).json({ message: "Module created successfully", module });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Failed to create module" });
   }
 };
@@ -111,7 +107,7 @@ const createModule = async (
 const updateModule = async (req: Request<Params>, res: Response) => {
   try {
     const { id } = req.params;
-    const module = await Module.findByIdAndUpdate(id, req.body, { new: true });
+    const module = await Module.findByIdAndUpdate(id, req.body);
     if (!module) {
       res.status(404).json({ message: "Module not found", success: false });
       return;
