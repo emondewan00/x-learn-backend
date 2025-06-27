@@ -92,7 +92,33 @@ const updateUserCourse = async (req: Request, res: Response) => {
     }
     res.status(200).json({ success: true, data: userCourse });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: (error as Error).message });
+  }
+};
+const changeActiveLesson = async (req: Request, res: Response) => {
+  try {
+    const { lastVisitedLesson, courseId, lessonId } = req.body;
+    const { id } = req.user;
+
+    const userCourse = await UserCourse.findOne({ courseId, userId: id });
+
+    if (!userCourse) {
+      res
+        .status(404)
+        .json({ success: false, message: "User course not found" });
+      return;
+    }
+
+    userCourse.lastVisitedLesson = lastVisitedLesson;
+    await userCourse.save();
+
+    res.status(200).json({ success: true, data: userCourse });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: (error as Error).message,
+    });
   }
 };
 
@@ -127,4 +153,5 @@ export {
   createUserCourse,
   updateUserCourse,
   updateCompleteLesson,
+  changeActiveLesson,
 };

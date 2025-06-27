@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { Module } from "../models/module.model";
 import { Course } from "../models/course.model";
 import { UserCourse } from "../models/userCourse.model";
-import { enhanceCourseWithProgress } from "../utils/enhanceCourseWithProgress";
 import { ILessonDoc } from "../types/lesson.types";
 
 type ModuleInput = {
@@ -21,7 +20,9 @@ const getModulesByCourse = async (req: Request<Params>, res: Response) => {
     const userProgress = await UserCourse.findOne({
       userId: req.user.id,
       courseId: req.params.id,
-    }).lean();
+    })
+      .populate("lastVisitedLesson")
+      .lean();
 
     if (!userProgress) {
       res.status(200).json({ message: "Modules found", data: [] });
@@ -36,26 +37,18 @@ const getModulesByCourse = async (req: Request<Params>, res: Response) => {
       .select("title description order _id courseId")
       .lean();
 
-    const totalLessons = modulesData.reduce(
-      (total, module) => total + module.lessons.length,
-      0
-    );
-
-    const { activeLesson, modules } = enhanceCourseWithProgress(
-      modulesData,
-      userProgress
-    );
-
-    const countInitialProgress =
-      (userProgress.completedLessons.length / totalLessons) * 100;
+    const sortedModules = modulesData
+      .sort((a, b) => a.order - b.order)
+      .map((module) => ({
+        ...module,
+        lessons: module.lessons.sort((a, b) => a.order - b.order),
+      }));
 
     res.status(200).json({
       message: "Modules found",
-      data: modules,
-      progress: countInitialProgress,
+      data: sortedModules,
+      activeLesson: userProgress.lastVisitedLesson,
       completedLessons: userProgress.completedLessons,
-      activeLesson,
-      totalLessons,
     });
   } catch (error) {
     res.status(500).json({ message: "Failed to get modules", success: false });
