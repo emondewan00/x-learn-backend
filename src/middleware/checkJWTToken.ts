@@ -5,14 +5,9 @@ const checkJWTToken = (req: Request, res: Response, next: NextFunction) => {
   let authToken = req.headers.authorization;
 
   if (!authToken) {
-    const tokenName =
-      process.env.NODE_ENV === "prod"
-        ? "__Secure-authjs.session-token"
-        : "authjs.session-token";
-    authToken = "bearer " + req.cookies[tokenName];
+    authToken = "bearer " + req.cookies["session-token"];
   }
 
-  console.log(JSON.stringify(req.cookies), authToken, "hello");
   if (!authToken) {
     res.status(401).send("Unauthorized");
     return;
