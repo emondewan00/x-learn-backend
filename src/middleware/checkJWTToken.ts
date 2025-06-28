@@ -5,7 +5,11 @@ const checkJWTToken = (req: Request, res: Response, next: NextFunction) => {
   let authToken = req.headers.authorization;
 
   if (!authToken) {
-    authToken = "bearer " + req.cookies["authjs.session-token"];
+    const tokenName =
+      process.env.NODE_ENV === "prod"
+        ? "__Secure-authjs.session-token"
+        : "authjs.session-token";
+    authToken = "bearer " + req.cookies[tokenName];
   }
 
   if (!authToken) {

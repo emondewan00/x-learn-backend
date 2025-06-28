@@ -9,7 +9,11 @@ export const optionalAuth = (
   let authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    authHeader = "bearer " + req.cookies["authjs.session-token"];
+    const tokenName =
+      process.env.NODE_ENV === "prod"
+        ? "__Secure-authjs.session-token"
+        : "authjs.session-token";
+    authHeader = "bearer " + req.cookies[tokenName];
   }
 
   if (authHeader?.startsWith("Bearer ")) {
