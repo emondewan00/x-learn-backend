@@ -14,12 +14,12 @@ type Params = { id: string };
 
 const getLessons = async (req: Request, res: Response) => {
   try {
-    const { title, courseId, moduleId, page = 1, limit = 10 } = req.query;
+    const { search, courseId, moduleId, page = 1, limit = 10 } = req.query;
 
     const filter: any = {};
 
-    if (title) {
-      filter.title = { $regex: title, $options: "i" };
+    if (search) {
+      filter.title = { $regex: search, $options: "i" };
     }
 
     if (courseId) {
