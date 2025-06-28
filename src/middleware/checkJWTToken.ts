@@ -4,6 +4,8 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 const checkJWTToken = (req: Request, res: Response, next: NextFunction) => {
   let authToken = req.headers.authorization;
 
+  console.log(req.cookies);
+
   if (!authToken) {
     const tokenName =
       process.env.NODE_ENV === "prod"
