@@ -23,6 +23,11 @@ app.use(
 app.use(express.json());
 app.use(cookiesParser());
 
+app.use((req, res, next) => {
+  console.log(req.cookies, "cookies");
+  next();
+});
+
 app.use("/statics", express.static(path.join(__dirname, "..", "uploads")));
 app.use("/api/auth", authRouter);
 app.use("/api/courses", courseRouter);
