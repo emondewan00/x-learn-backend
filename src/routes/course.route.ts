@@ -16,7 +16,7 @@ import { checkAdmin } from "../middleware/checkAdmin";
 
 const courseRouter = Router();
 
-courseRouter.get("/", optionalAuth, getAllCourses);
+courseRouter.get("/", getAllCourses);
 courseRouter.get("/all", checkJWTToken, getAllCoursesForAdmin);
 courseRouter.get("/:id", optionalAuth, getCourseById);
 courseRouter.post(

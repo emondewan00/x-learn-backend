@@ -9,6 +9,7 @@ const courseSchema = new Schema<ICourse>(
     image: { type: String, required: true },
     published: { type: Boolean, default: false },
     modules: [{ type: Schema.Types.ObjectId, ref: "Module" }],
+    enrolledCount: { type: Number, default: 0 },
   },
   {
     timestamps: true,

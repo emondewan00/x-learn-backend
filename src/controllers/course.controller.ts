@@ -17,14 +17,17 @@ interface CourseInput {
 export const getAllCourses = async (req: Request, res: Response) => {
   try {
     const { limit, skip } = getPagination(req.query, 10);
+    const sortQuery: any = {};
 
-    const query: any = {};
-
-    if (!req.user || req.user?.role === "user") {
-      query.published = { $eq: true };
+    if (req.query?.popular) {
+      sortQuery.enrolledCount = -1;
     }
 
-    const courses = await Course.find(query).skip(skip).limit(limit);
+    const courses = await Course.find({})
+      .skip(skip)
+      .limit(limit)
+      .sort(sortQuery)
+      .lean();
 
     res.status(200).json({
       success: true,

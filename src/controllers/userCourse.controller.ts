@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import { UserCourse } from "../models/userCourse.model";
 import { User } from "../models/user.model";
+import { Course } from "../models/course.model";
+import { Lesson } from "../models/lesson.model";
+import { Module } from "../models/module.model";
 
 type IUserCourseInput = {
   userId: string;
@@ -21,16 +24,54 @@ const getMyCourses = async (req: Request, res: Response) => {
       return;
     }
 
-    const userCourses = await UserCourse.find({ userId: user._id }).populate(
-      "courseId"
-    );
+    const userCourses = await UserCourse.find({ userId: user.id })
+      .populate("courseId")
+      .lean();
+
+    if (userCourses.length > 0) {
+      const userCoursesWithProgress = await Promise.all(
+        userCourses.map(async (userCourse) => {
+          const course = userCourse.courseId;
+          const completedLessons = userCourse.completedLessons.length;
+
+          const lessonLength = await Lesson.countDocuments({
+            course: course._id,
+          }).lean();
+
+          const progress = Math.round((completedLessons / lessonLength) * 100);
+
+          return {
+            ...userCourse.courseId,
+            progress: isNaN(progress) ? 0 : progress,
+          };
+        })
+      );
+
+      res.status(200).json({
+        success: true,
+        data: userCoursesWithProgress,
+      });
+      return;
+    }
 
     res.status(200).json({
       success: true,
-      data: userCourses,
+      data: [],
     });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ success: false, message: "Something went wrong" });
+  }
+};
+
+const getUserCourseByCourseId = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userCourse = await UserCourse.findOne({ courseId: id });
+
+    res.status(200).json({ success: true, isEnrolled: !!userCourse });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: "Something went wrong" });
   }
 };
@@ -55,10 +96,29 @@ const createUserCourse = async (
         .json({ success: false, message: "Already enrolled in this course" });
       return;
     }
+    const modules = await Module.find({ courseId })
+      .sort({ order: -1 })
+      .populate({
+        path: "lessons",
+        select: "_id order",
+      })
+      .lean();
+
+    const lessonsId = modules.flatMap((module) => module.lessons);
+
+    const sortedLessons = (lessonsId as any).sort(
+      (a: any, b: any) => a.order - b.order
+    );
 
     const userCourse = await UserCourse.create(req.body);
-
     const userDoc = await User.findById(user.id);
+    const course = await Course.findById(courseId);
+
+    if (!course) {
+      await UserCourse.findByIdAndDelete(userCourse._id);
+      res.status(404).json({ success: false, message: "Course not found" });
+      return;
+    }
 
     if (!userDoc) {
       await UserCourse.findByIdAndDelete(userCourse._id);
@@ -66,6 +126,11 @@ const createUserCourse = async (
       return;
     }
 
+    userCourse.lastVisitedLesson = sortedLessons[0];
+    await userCourse.save();
+
+    course.enrolledCount += 1;
+    await course.save();
     userDoc.enrolledCourses.push(userCourse._id);
     await userDoc.save();
 
@@ -154,4 +219,5 @@ export {
   updateUserCourse,
   updateCompleteLesson,
   changeActiveLesson,
+  getUserCourseByCourseId,
 };
