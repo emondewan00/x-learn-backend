@@ -4,8 +4,6 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 const checkJWTToken = (req: Request, res: Response, next: NextFunction) => {
   let authToken = req.headers.authorization;
 
-  console.log(req.cookies);
-
   if (!authToken) {
     const tokenName =
       process.env.NODE_ENV === "prod"
@@ -14,6 +12,7 @@ const checkJWTToken = (req: Request, res: Response, next: NextFunction) => {
     authToken = "bearer " + req.cookies[tokenName];
   }
 
+  console.log(JSON.stringify(req.cookies), authToken, "hello");
   if (!authToken) {
     res.status(401).send("Unauthorized");
     return;

@@ -24,7 +24,7 @@ app.use(express.json());
 app.use(cookiesParser());
 
 app.use((req, res, next) => {
-  console.log(req.cookies, "cookies");
+  console.log(JSON.stringify(req.cookies), "cookies");
   next();
 });
 
