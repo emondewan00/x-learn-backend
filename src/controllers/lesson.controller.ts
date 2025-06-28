@@ -4,6 +4,7 @@ import { ILesson } from "../types/lesson.types";
 import { Module } from "../models/module.model";
 import fs from "fs";
 import path from "path";
+import { Course } from "../models/course.model";
 
 interface MulterRequest extends Request {
   files: Express.Multer.File[];
@@ -11,17 +12,61 @@ interface MulterRequest extends Request {
 
 type Params = { id: string };
 
-// --- Get all lessons under a module ---
-const getLessons = async (req: Request<Params>, res: Response) => {
+const getLessons = async (req: Request, res: Response) => {
   try {
-    const lessons = await Lesson.find({ module: req.params.id });
-    res.status(200).json({ success: true, data: lessons });
+    const { title, courseId, moduleId, page = 1, limit = 10 } = req.query;
+
+    const filter: any = {};
+
+    if (title) {
+      filter.title = { $regex: title, $options: "i" };
+    }
+
+    if (courseId) {
+      filter.courseId = courseId;
+    }
+
+    if (moduleId) {
+      filter.moduleId = moduleId;
+    }
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const modules = await Module.find().select("title _id");
+    const courses = await Course.find().select("title _id");
+    const [lessons, total] = await Promise.all([
+      Lesson.find(filter)
+        .populate({
+          path: "courseId",
+          select: "title _id",
+        })
+        .populate({
+          path: "moduleId",
+          select: "title _id",
+        })
+        .skip(skip)
+        .limit(Number(limit))
+        .sort({ createdAt: -1 }),
+      Lesson.countDocuments(filter),
+    ]);
+
+    res.json({
+      success: true,
+      data: lessons,
+      page: Number(page),
+      limit: Number(limit),
+      total,
+      totalPages: Math.ceil(total / Number(limit)),
+      modules,
+      courses,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: (error as Error).message });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch lessons", error });
   }
 };
 
-// --- Get single lesson by ID ---
 const getLessonById = async (req: Request<Params>, res: Response) => {
   try {
     const lesson = await Lesson.findById(req.params.id);
@@ -35,7 +80,6 @@ const getLessonById = async (req: Request<Params>, res: Response) => {
   }
 };
 
-// --- Create a lesson ---
 const createLesson = async (req: Request<{}, {}, ILesson>, res: Response) => {
   try {
     const module = await Module.findById(req.body.moduleId);
@@ -54,7 +98,6 @@ const createLesson = async (req: Request<{}, {}, ILesson>, res: Response) => {
   }
 };
 
-// --- Update lesson ---
 const updateLesson = async (
   req: Request<Params, {}, Partial<ILesson>>,
   res: Response
@@ -106,7 +149,6 @@ const updatePDF = async (req: Request, res: Response) => {
   }
 };
 
-// --- Delete lesson ---
 const deleteLesson = async (req: Request<Params>, res: Response) => {
   try {
     const lesson = await Lesson.findByIdAndDelete(req.params.id);
