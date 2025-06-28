@@ -11,7 +11,7 @@ interface CourseInput {
   title: string;
   description: string;
   price?: number;
-  image: FormData;
+  image?: string;
 }
 
 export const getAllCourses = async (req: Request, res: Response) => {
@@ -155,6 +155,10 @@ export const updateCourseImage = async (
       res.status(404).json({ success: false, message: "Course not found" });
       return;
     }
+
+    course.image = file.filename;
+    await course.save();
+
     res.status(200).json({ success: true, data: course });
   } catch (error) {
     res.status(500).json({ success: false, message: (error as Error).message });
@@ -185,7 +189,9 @@ export const deleteCourse = async (req: Request<Params>, res: Response) => {
         const deletedLesson = await Lesson.findByIdAndDelete(lesson._id);
         if (deletedLesson?.resources) {
           for (const resource of deletedLesson.resources) {
-            fs.unlinkSync("/src/uploads/resources/" + resource);
+            fs.unlinkSync(
+              path.join(__dirname, "..", "..", "uploads", "resources", resource)
+            );
           }
         }
       }
