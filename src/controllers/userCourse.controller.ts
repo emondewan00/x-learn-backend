@@ -97,11 +97,12 @@ const createUserCourse = async (
       return;
     }
     const modules = await Module.find({ courseId })
-      .sort({ order: -1 })
+      .sort({ order: 1 })
       .populate({
         path: "lessons",
         select: "_id order",
       })
+      .limit(10)
       .lean();
 
     const lessonsId = modules.flatMap((module) => module.lessons);
